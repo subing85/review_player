@@ -6,10 +6,7 @@ def extract_frame_number(path):
     Extract frame number from path.
     """
 
-    result = re.search(
-        r"\.(\d+)\.",
-        path
-    )
+    result = re.search(r"\.(\d+)\.", path)
 
     if not result:
         return None
@@ -27,10 +24,7 @@ def get_sequence_path(path):
         shot.%04d.exr
     """
 
-    result = re.search(
-        r"(.*)\.(\d+)\.(\w+)$",
-        path
-    )
+    result = re.search(r"(.*)\.(\d+)\.(\w+)$", path)
 
     if not result:
         return path
@@ -43,6 +37,4 @@ def get_sequence_path(path):
 
     padding = len(frame)
 
-    return (
-        f"{prefix}.%0{padding}d.{extension}"
-    )
+    return f"{prefix}.%0{padding}d.{extension}"

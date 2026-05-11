@@ -5,23 +5,30 @@ import glob
 import numpy as np
 import OpenImageIO as oiio
 
+
 class VideoReader(object):
 
     def __init__(self, path):
 
+        self.typed = "video"
         self.path = path
         self.container = av.open(path)
         self.stream = self.container.streams.video[0]
 
-        self.frames = list(
-            self.container.decode(self.stream)
-        )
+        self.frames = list(self.container.decode(self.stream))
 
     def frame_count(self):
         return len(self.frames)
 
-    def fps(self):
-        return float(self.stream.average_rate)
+    def get_fps(self, rounded=0):
+        fps = float(self.stream.average_rate)
+
+        if rounded == 0:
+            return fps
+
+        result = round(fps, rounded)
+
+        return result
 
     def get_frame(self, frame_number):
         frame = self.frames[frame_number]
@@ -33,13 +40,16 @@ class VideoReader(object):
 class SequenceReader(object):
 
     def __init__(self, path):
+        self.typed = "sequence"
+
+        self.fps = 24.0
 
         self.path = path
         self.files = self.find_sequence(path)
 
     def find_sequence(self, path):
 
-        pattern = re.sub(r'#+', '*', path)
+        pattern = re.sub(r"#+", "*", path)
         found_files = sorted(glob.glob(pattern))
         files = sorted(glob.glob(pattern))
 
@@ -53,8 +63,11 @@ class SequenceReader(object):
     def frame_count(self):
         return len(self.files)
 
-    def fps(self):
-        return 24.0
+    def get_fps(self):
+        return self.fps
+
+    def set_fps(self, fps):
+        self.fps = fps or self.fps
 
     def get_frame(self, frame_number):
         path = self.files[frame_number]
@@ -78,7 +91,7 @@ class SequenceReader(object):
             ("R", "G", "B"),
             ("beauty.R", "beauty.G", "beauty.B"),
             ("rgba.R", "rgba.G", "rgba.B"),
-            ("Ci.R", "Ci.G", "Ci.B")
+            ("Ci.R", "Ci.G", "Ci.B"),
         ]
 
         for candidate in candidates:
@@ -101,12 +114,9 @@ class SequenceReader(object):
 
         # return image
 
-
         # float -> preview
         image = np.clip(image, 0.0, 1.0)
 
-        image = (
-            image * 255.0
-        ).astype(np.uint8)
+        image = (image * 255.0).astype(np.uint8)
 
         return image

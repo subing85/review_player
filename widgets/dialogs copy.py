@@ -2,18 +2,27 @@ import sys
 import os
 import re
 import glob
-from PySide6.QtWidgets import (QApplication, QFileDialog, QCheckBox,
-                               QStyledItemDelegate, QFileSystemModel)
+from PySide6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QCheckBox,
+    QStyledItemDelegate,
+    QFileSystemModel,
+)
 from PySide6.QtCore import QSortFilterProxyModel, Qt
+
 
 class SequenceDisplayDelegate(QStyledItemDelegate):
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
         proxy = index.model()
-        if hasattr(proxy, '_combine_sequences') and proxy._combine_sequences:
+        if hasattr(proxy, "_combine_sequences") and proxy._combine_sequences:
             if index.column() == 0:
                 # Replace .1234. with .####.
-                option.text = re.sub(r'\.(\d+)\.', lambda m: '.' + ('#' * len(m.group(1))) + '.', option.text)
+                option.text = re.sub(
+                    r"\.(\d+)\.", lambda m: "." + ("#" * len(m.group(1))) + ".", option.text
+                )
+
 
 class SequenceFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, parent=None):
@@ -42,7 +51,7 @@ class SequenceFilterProxyModel(QSortFilterProxyModel):
 
         file_name = source_model.fileName(index)
         # Match pattern: name.number.ext
-        match = re.search(r'(.*)\.(\d+)\.(\w+)$', file_name)
+        match = re.search(r"(.*)\.(\d+)\.(\w+)$", file_name)
 
         if match:
             # Create key: "filename.ext"
@@ -53,6 +62,7 @@ class SequenceFilterProxyModel(QSortFilterProxyModel):
             return False
 
         return True
+
 
 class SequenceFileDialog(QFileDialog):
     def __init__(self):
@@ -88,10 +98,11 @@ class SequenceFileDialog(QFileDialog):
         all_frames = []
         for f in selected:
             # Pattern: path/to/file.1001.exr -> path/to/file.*.exr
-            pattern = re.sub(r'\.\d+\.', '.*.', f)
+            pattern = re.sub(r"\.\d+\.", ".*.", f)
             all_frames.extend(glob.glob(pattern))
 
         return sorted(list(set(all_frames)))
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

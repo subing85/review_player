@@ -1,6 +1,5 @@
 import PyOpenColorIO as OCIO
 
-
 """
 class OCIOProcessor:
 
@@ -44,9 +43,7 @@ class OCIOProcessor:
 
         if config_path:
 
-            self.config = OCIO.Config.CreateFromFile(
-                config_path
-            )
+            self.config = OCIO.Config.CreateFromFile(config_path)
 
         else:
 
@@ -58,10 +55,7 @@ class OCIOProcessor:
 
     def get_color_spaces(self):
 
-        return [
-            cs.getName()
-            for cs in self.config.getColorSpaces()
-        ]
+        return [cs.getName() for cs in self.config.getColorSpaces()]
 
     # --------------------------------------------------
     # Displays
@@ -83,34 +77,17 @@ class OCIOProcessor:
     # Process image
     # --------------------------------------------------
 
-    def _process_image(
-        self,
-        image,
-        input_space,
-        display,
-        view
-    ):
+    def _process_image(self, image, input_space, display, view):
 
         processor = self.config.getProcessor(
-            OCIO.DisplayViewTransform(
-                src=input_space,
-                display=display,
-                view=view
-            )
+            OCIO.DisplayViewTransform(src=input_space, display=display, view=view)
         )
 
         cpu = processor.getDefaultCPUProcessor()
 
         return cpu.applyRGB(image)
 
-
-    def process_image(
-        self,
-        image,
-        input_space,
-        display,
-        view
-    ):
+    def process_image(self, image, input_space, display, view):
 
         transform = OCIO.DisplayViewTransform()
 
@@ -120,13 +97,9 @@ class OCIOProcessor:
 
         transform.setView(view)
 
-        processor = self.config.getProcessor(
-            transform
-        )
+        processor = self.config.getProcessor(transform)
 
-        cpu_processor = (
-            processor.getDefaultCPUProcessor()
-        )
+        cpu_processor = processor.getDefaultCPUProcessor()
 
         image = image.astype(np.float32)
 

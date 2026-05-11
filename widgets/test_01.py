@@ -1,6 +1,6 @@
 import sys
-from PySide6.QtWidgets import (QApplication, QFileDialog, QCheckBox,
-                               QVBoxLayout, QGridLayout)
+from PySide6.QtWidgets import QApplication, QFileDialog, QCheckBox, QVBoxLayout, QGridLayout
+
 
 class SequenceFileDialog(QFileDialog):
     def __init__(self, *args, **kwargs):
@@ -23,6 +23,7 @@ class SequenceFileDialog(QFileDialog):
 
     def is_sequence_checked(self):
         return self.seq_checkbox.isChecked()
+
 
 # --- Example Usage ---
 if __name__ == "__main__":

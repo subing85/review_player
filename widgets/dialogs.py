@@ -14,9 +14,11 @@ class SequenceDisplayDelegate(QtWidgets.QStyledItemDelegate):
         super().initStyleOption(option, index)
 
         proxy = index.model()
-        if hasattr(proxy, '__collapse_sequences__') and proxy.__collapse_sequences__:
+        if hasattr(proxy, "__collapse_sequences__") and proxy.__collapse_sequences__:
             if index.column() == 0:
-                self.collapsename = re.sub(r'\.(\d+)\.', lambda x: '.' + ('#' * len(x.group(1))) + '.', option.text)
+                self.collapsename = re.sub(
+                    r"\.(\d+)\.", lambda x: "." + ("#" * len(x.group(1))) + ".", option.text
+                )
                 option.text = self.collapsename
 
 
@@ -48,7 +50,7 @@ class SequenceFilterProxyModel(QtCore.QSortFilterProxyModel):
         file_name = source_model.fileName(index)
 
         # Match pattern: name.number.ext
-        match = re.search(r'(.*)\.(\d+)\.(\w+)$', file_name)
+        match = re.search(r"(.*)\.(\d+)\.(\w+)$", file_name)
 
         if match:
             # Create key: "filename.ext"
@@ -60,19 +62,20 @@ class SequenceFilterProxyModel(QtCore.QSortFilterProxyModel):
 
         return True
 
+
 class OpenMediaDialog(QtWidgets.QFileDialog):
     def __init__(self, parent, **kwargs):
         super().__init__(parent)
 
-        self.browsepath = kwargs.get("browsepath", QtCore.QDir.homePath())
+        # self.browsepath = kwargs.get("browsepath", QtCore.QDir.homePath())
+        self.browsepath = "/alpha/works/C2C/samples/footage/shot-1001-1/"
 
         self.setDirectory(self.browsepath)
         self.setFileMode(QtWidgets.QFileDialog.FileMode.ExistingFile)
 
         # Define the filters
-        filefilters = f"Image and Video Files (*.{' *.'.join(constants.OPEN_EXTENSIONS)})",
+        filefilters = (f"Image and Video Files (*.{' *.'.join(constants.OPEN_EXTENSIONS)})",)
         self.setNameFilters(filefilters)
-
 
         self.setWindowTitle("Open Media")
         self.setOption(QtWidgets.QFileDialog.Option.DontUseNativeDialog, True)
@@ -113,17 +116,17 @@ class OpenMediaDialog(QtWidgets.QFileDialog):
             dirname = os.path.dirname(path)
             basename = os.path.basename(path)
             # Apply logic to the name
-            pattern_name = re.sub(r'\.(\d+)\.', lambda x: '.' + ('#' * len(x.group(1))) + '.', basename)
+            pattern_name = re.sub(
+                r"\.(\d+)\.", lambda x: "." + ("#" * len(x.group(1))) + ".", basename
+            )
             return os.path.join(dirname, pattern_name)
-
 
         return path
 
 
-
-
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     dialog = OpenMediaDialog()
     if dialog.exec():

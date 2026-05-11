@@ -20,14 +20,9 @@ class SequenceReader:
 
         extension = os.path.splitext(path)[1]
 
-        pattern = os.path.join(
-            directory,
-            f"*{extension}"
-        )
+        pattern = os.path.join(directory, f"*{extension}")
 
-        files = sorted(
-            glob.glob(pattern)
-        )
+        files = sorted(glob.glob(pattern))
 
         return files
 
@@ -47,9 +42,7 @@ class SequenceReader:
 
         if not input_file:
 
-            raise RuntimeError(
-                f"Failed to open image: {path}"
-            )
+            raise RuntimeError(f"Failed to open image: {path}")
 
         spec = input_file.spec()
 
@@ -67,7 +60,7 @@ class SequenceReader:
             ("R", "G", "B"),
             ("beauty.R", "beauty.G", "beauty.B"),
             ("rgba.R", "rgba.G", "rgba.B"),
-            ("Ci.R", "Ci.G", "Ci.B")
+            ("Ci.R", "Ci.G", "Ci.B"),
         ]
 
         for candidate in candidates:
@@ -80,19 +73,11 @@ class SequenceReader:
 
         if not rgb:
 
-            raise RuntimeError(
-                f"No RGB channels found in: {path}"
-            )
+            raise RuntimeError(f"No RGB channels found in: {path}")
 
-        channel_indices = [
-            channels.index(ch)
-            for ch in rgb
-        ]
+        channel_indices = [channels.index(ch) for ch in rgb]
 
-        image = input_file.read_image(
-            chbegin=channel_indices[0],
-            chend=channel_indices[-1] + 1
-        )
+        image = input_file.read_image(chbegin=channel_indices[0], chend=channel_indices[-1] + 1)
 
         input_file.close()
 
@@ -103,12 +88,9 @@ class SequenceReader:
 
         # return image
 
-
         # float -> preview
         image = np.clip(image, 0.0, 1.0)
 
-        image = (
-            image * 255.0
-        ).astype(np.uint8)
+        image = (image * 255.0).astype(np.uint8)
 
         return image

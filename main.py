@@ -4,6 +4,7 @@ from PySide6 import QtWidgets
 
 from widgets import MainWindow
 
+
 def main():
     """
     Application entry point.

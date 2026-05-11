@@ -1,8 +1,6 @@
 import os
 
-
 CURRENT_PATH = os.path.dirname(__file__)
-
 
 
 def getIconFilepath(name):

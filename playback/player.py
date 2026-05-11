@@ -1,10 +1,15 @@
 import os
 
+import logger
+
 from PySide6 import QtCore
 
 from playback.reader import VideoReader
 from playback.reader import SequenceReader
 from playback.frame_cache import FrameCache
+
+LOGGER = logger.getLogger(__name__)
+
 
 class MediaPlayer(QtCore.QObject):
 
@@ -22,9 +27,14 @@ class MediaPlayer(QtCore.QObject):
 
         self.reader = None
 
-        self.current_frame = 0
+        self.fps = None
 
+        self.current_frame = 0
         self.frame_count = 0
+
+        self.loop_enabled = False
+        self.is_playing = False
+
         self.cache = FrameCache(max_size=200)
 
         self.timer = QtCore.QTimer()
@@ -38,27 +48,55 @@ class MediaPlayer(QtCore.QObject):
             self.reader = VideoReader(path)
         else:
             self.reader = SequenceReader(path)
+            self.reader.set_fps(self.fps)
 
         self.frame_count = self.reader.frame_count()
 
         self.current_frame = 0
+        self.start_frame = 0
+        self.end_frame = self.frame_count - 1
 
         self.update_frame()
 
-    def play(self):
+    def toggle_play_pause(self):
+        if self.is_playing:
+            self.stop()
+        else:
+            self.play()
 
-        print("\nself.reader", self.reader)
+    def set_fps(self, fps):
+        self.fps = fps
+
+        if self.reader and self.reader.typed == "sequence":
+            self.reader.set_fps(fps)
+
+        # Restart timer if currently playing
+        if self.is_playing:
+            interval = int(1000 / fps)
+            self.timer.start(interval)
+
+        LOGGER.info(f'Current FPS, has been changed into, "{fps}-FPS"')
+
+    def play(self):
         if not self.reader:
             return
 
-        fps = self.reader.fps()
-        interval = int(1000 / fps)
+        if self.current_frame >= self.end_frame:
+            self.current_frame = self.start_frame
 
-        print("fps", fps, "interval", interval)
+        fps = self.reader.get_fps()
+
+        interval = int(1000 / fps)
         self.timer.start(interval)
+
+        self.is_playing = True
 
     def stop(self):
         self.timer.stop()
+        self.is_playing = False
+
+    def set_loop(self, enabled):
+        self.loop_enabled = enabled
 
     def seek(self, frame):
         self.current_frame = frame
@@ -68,7 +106,12 @@ class MediaPlayer(QtCore.QObject):
         self.current_frame += 1
 
         if self.current_frame >= self.frame_count:
-            self.current_frame = 0
+
+            if self.loop_enabled:
+                self.current_frame = 0
+            else:
+                self.stop()
+                self.current_frame = self.end_frame
 
         self.update_frame()
 
@@ -79,11 +122,8 @@ class MediaPlayer(QtCore.QObject):
         self.frame_ready.emit(frame)
         self.frame_changed.emit(self.current_frame)
 
-
     def _update_frame(self):
-        frame = self.reader.get_frame(
-            self.current_frame
-        )
+        frame = self.reader.get_frame(self.current_frame)
 
         # --------------------------------------------------
         # Apply OCIO
@@ -93,10 +133,7 @@ class MediaPlayer(QtCore.QObject):
             frame = frame.astype("float32") / 255.0
 
             frame = self.ocio_processor.process_image(
-                frame,
-                self.input_space,
-                self.display,
-                self.view
+                frame, self.input_space, self.display, self.view
             )
 
             frame = frame * 255.0
@@ -108,7 +145,6 @@ class MediaPlayer(QtCore.QObject):
         self.frame_ready.emit(frame)
         self.frame_changed.emit(self.current_frame)
 
-
     def previous_frame(self):
         if not self.reader:
             return
@@ -119,7 +155,6 @@ class MediaPlayer(QtCore.QObject):
             self.current_frame = self.frame_count - 1
 
         self.update_frame()
-
 
     def next_frame_manual(self):
 

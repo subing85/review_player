@@ -1,4 +1,3 @@
-
 import logger
 import constants
 import qdarktheme
@@ -19,9 +18,11 @@ from widgets.timeline import TimelineWidget
 
 from widgets.buttons import OpenButton
 from widgets.buttons import LoopButton
-from widgets.buttons import PlayButton
 from widgets.buttons import ForwardButton
 from widgets.buttons import BackwordButton
+from widgets.buttons import PlayPauseButton
+
+from widgets.comboboxs import FbsCombobox
 
 from widgets.layouts import HorizontalSpacer
 from widgets.layouts import HorizontalSplitter
@@ -32,7 +33,6 @@ from playback.player import MediaPlayer
 from ocio.ocio_processor import OCIOProcessor
 
 from utils import path_utils
-
 
 LOGGER = logger.getLogger(__name__)
 
@@ -72,7 +72,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.viewerGroupBox = QtWidgets.QGroupBox(self)
         self.splitter.addWidget(self.viewerGroupBox)
 
-        self.verticallayout_viewer = VerticalLayout(self.viewerGroupBox, space=10, margins=(10, 10, 10, 10))
+        self.verticallayout_viewer = VerticalLayout(
+            self.viewerGroupBox, space=10, margins=(10, 10, 10, 10)
+        )
 
         self.horizontallayout_panel = HorizontalLayout(None, space=10, margins=(0, 0, 0, 0))
         self.verticallayout_viewer.addLayout(self.horizontallayout_panel)
@@ -98,8 +100,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.backwordButton = BackwordButton(self, width=32, height=32)
         self.horizontallayout_controller.addWidget(self.backwordButton)
 
-        self.playButton = PlayButton(self, width=42, height=42)
-        self.horizontallayout_controller.addWidget(self.playButton)
+        self.playPauseButton = PlayPauseButton(self, width=42, height=42)
+        self.horizontallayout_controller.addWidget(self.playPauseButton)
 
         self.forwardButton = ForwardButton(self, width=32, height=32)
         self.horizontallayout_controller.addWidget(self.forwardButton)
@@ -107,8 +109,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.horizontalspacer2 = HorizontalSpacer()
         self.horizontallayout_controller.addItem(self.horizontalspacer2)
 
-        self.loopButton = LoopButton(self, width=32, height=32)
+        self.loopButton = LoopButton(self, width=42, height=32)
+
         self.horizontallayout_controller.addWidget(self.loopButton)
+
+        self.fpsCombobox = FbsCombobox(self)
+        self.fpsCombobox.fps_changed.connect(self.update_fps)
+        self.horizontallayout_controller.addWidget(self.fpsCombobox)
 
         self.copyrightLabel = CopyrightLabel(self)
         self.verticallayout.addWidget(self.copyrightLabel)
@@ -118,21 +125,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
         SetStylesheet(self, theme=constants.DEFAULT_THEME)
 
-
         # self.openButton.clicked.connect(self.open_media)
         self.openButton.clicked.connect(self.openMedia)
 
-        self.playButton.clicked.connect(self.player.play)
+        self.playPauseButton.clicked.connect(self.toggle_play_pause)
         # self.stop_button.clicked.connect(self.player.stop)
 
+        self.loopButton.toggled.connect(self.player.set_loop)
+
         self.player.frame_ready.connect(self.viewer.set_frame)
-        # self.player.frame_changed.connect(self.timeline.set_frame)
+        self.player.frame_changed.connect(self.timeline.set_frame)
 
         # self.timeline.frame_changed.connect(self.player.seek)
 
         self.backwordButton.clicked.connect(self.player.previous_frame)
         self.forwardButton.clicked.connect(self.player.next_frame_manual)
 
+        # self.fpsCombobox.currentTextChanged.connect(self.update_fps)
 
     def setupIcons(self):
         pixmap = NamePixmapIcon(constants.RP_TOOL_ICON)
@@ -152,9 +161,35 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.player.load(filepath)
 
+        self.reset_video_fps()
+
         self.timeline.set_range(0, self.player.frame_count - 1)
 
+    def toggle_play_pause(self):
+        self.player.toggle_play_pause()
+        self.playPauseButton.switch(self.player.is_playing)
 
+        self.reset_video_fps()
+
+    def reset_video_fps(self):
+        if self.player.reader.typed != "video":
+            return
+
+        fps = self.player.reader.get_fps(rounded=3)
+        context = self.fpsCombobox.findByKey(fps, "value")
+        if not context:
+            return
+
+        self.fpsCombobox.setValue(context)
+
+    def update_fps(self, context):
+        if not context.get("value"):
+            LOGGER.info(f"Invalid fps value")
+            return
+
+        fps = float(context["value"])
+
+        self.player.set_fps(fps)
 
     def build_ui(self):
 
@@ -206,7 +241,6 @@ class MainWindow(QtWidgets.QMainWindow):
         container = QtWidgets.QWidget()
         container.setLayout(main_layout)
 
-
         sizepolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
         )
@@ -245,7 +279,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.display_combo.currentTextChanged.connect(self.update_ocio)
         self.view_combo.currentTextChanged.connect(self.update_ocio)
 
-
     def open_media(self):
 
         path, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -258,42 +291,26 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         from pprint import pprint
-        pprint(path)
 
+        pprint(path)
 
         self.player.load(path)
 
-        self.timeline.set_range(
-            0,
-            self.player.frame_count - 1
-        )
+        self.timeline.set_range(0, self.player.frame_count - 1)
 
     def update_views(self):
         self.view_combo.clear()
 
         display = self.display_combo.currentText()
 
-        self.view_combo.addItems(
-            self.ocio.get_views(display)
-        )
+        self.view_combo.addItems(self.ocio.get_views(display))
 
     def update_ocio(self):
 
-        input_space = (
-            self.input_combo.currentText()
-        )
+        input_space = self.input_combo.currentText()
 
-        display = (
-            self.display_combo.currentText()
-        )
+        display = self.display_combo.currentText()
 
-        view = (
-            self.view_combo.currentText()
-        )
+        view = self.view_combo.currentText()
 
-        self.player.set_ocio(
-            self.ocio,
-            input_space,
-            display,
-            view
-        )
+        self.player.set_ocio(self.ocio, input_space, display, view)

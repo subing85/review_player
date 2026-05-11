@@ -14,9 +14,7 @@ class FrameCache:
 
         if len(self.cache) >= self.max_size:
 
-            first_key = next(
-                iter(self.cache)
-            )
+            first_key = next(iter(self.cache))
 
             # del self.cache[first_key]
 

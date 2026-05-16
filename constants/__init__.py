@@ -34,6 +34,195 @@ FPS_VALUES = [
 
 DEFULT_FPS = FPS_VALUES[1]
 
+WATER_MARKS_INPUTS = {
+    "top_left": [
+        {
+            "code": "project",
+            "enable": True,
+            "checked": False,
+            "font": {
+                "size": 15,
+                "family": "Noto Sans",  # Noto Sans
+                "fillColor": (255, 255, 255),
+                "bold": True,
+                "italic": False,
+                "spacing": 2,
+                "wordSpacing": 2,
+                "underline": False,
+                "overline": False,
+                "strikeOut": False,
+                "stretch": 0,
+                "stroke": 0,
+                "strokeColor": (0, 0, 0),
+                "capitalization": "mixedCase",  # AllUppercase AllLowercase, SmallCaps, Capitalize
+                "opacity": 1.0,
+            },
+        },
+        {
+            "code": "shot",
+            "enable": True,
+            "checked": False,
+            "font": {
+                "size": 15,
+                "family": "Noto Sans",  # Noto Sans
+                "fillColor": (255, 255, 255),
+                "bold": True,
+                "italic": False,
+                "spacing": 2,
+                "wordSpacing": 2,
+                "underline": False,
+                "overline": False,
+                "strikeOut": False,
+                "stretch": 0,
+                "stroke": 0,
+                "strokeColor": (0, 0, 0),
+                "capitalization": "mixedCase",  # AllUppercase AllLowercase, SmallCaps, Capitalize
+            },
+        },
+        {
+            "code": "task",
+            "enable": True,
+            "checked": False,
+            "font": {
+                "size": 15,
+                "family": "Noto Sans",  # Noto Sans
+                "fillColor": (255, 255, 255),
+                "bold": True,
+                "italic": False,
+                "spacing": 2,
+                "wordSpacing": 2,
+                "underline": False,
+                "overline": False,
+                "strikeOut": False,
+                "stretch": 0,
+                "stroke": 0,
+                "strokeColor": (0, 0, 0),
+                "capitalization": "mixedCase",  # AllUppercase AllLowercase, SmallCaps, Capitalize
+            },
+        },
+        {
+            "code": "version",
+            "enable": True,
+            "checked": False,
+            "font": {
+                "size": 15,
+                "family": "Noto Sans",  # Noto Sans
+                "fillColor": (255, 255, 255),
+                "bold": True,
+                "italic": False,
+                "spacing": 2,
+                "wordSpacing": 2,
+                "underline": False,
+                "overline": False,
+                "strikeOut": False,
+                "stretch": 0,
+                "stroke": 0,
+                "strokeColor": (0, 0, 0),
+                "capitalization": "mixedCase",  # AllUppercase AllLowercase, SmallCaps, Capitalize
+            },
+        },
+    ],
+    "top_right": [
+        {
+            "code": "date",
+            "enable": True,
+            "checked": False,
+            "font": {
+                "size": 15,
+                "family": "Noto Sans",  # Noto Sans
+                "fillColor": (255, 255, 255),
+                "bold": True,
+                "italic": False,
+                "spacing": 0,
+                "wordSpacing": 0,
+                "underline": False,
+                "overline": False,
+                "strikeOut": False,
+                "stretch": 0,
+                "stroke": 0,
+                "strokeColor": (0, 0, 0),
+                "capitalization": "mixedCase",  # AllUppercase AllLowercase, SmallCaps, Capitalize
+            },
+        },
+        {
+            "code": "artist",
+            "enable": True,
+            "checked": False,
+            "font": {
+                "size": 15,
+                "family": "Noto Sans",  # Noto Sans
+                "fillColor": (255, 255, 255),
+                "bold": True,
+                "italic": False,
+                "spacing": 0,
+                "wordSpacing": 0,
+                "underline": False,
+                "overline": False,
+                "strikeOut": False,
+                "stretch": 0,
+                "stroke": 0,
+                "strokeColor": (0, 0, 0),
+                "capitalization": "mixedCase",  # AllUppercase AllLowercase, SmallCaps, Capitalize
+            },
+        },
+    ],
+    "top_center": [],
+    "bottom_left": [
+        {"code": "Project Logo", "enable": True, "checked": False, "type": "image", "opacity": 0.75}
+    ],
+    "bottom_right": [
+        {"code": "Studio Logo", "enable": True, "checked": False, "type": "image", "opacity": 0.7}
+    ],
+    "bottom_center": [
+        {
+            "code": "frame",
+            "enable": True,
+            "checked": False,
+            "font": {
+                "size": 15,
+                "family": "Noto Sans",  # Times New Roman
+                "fillColor": (255, 255, 255),
+                "bold": True,
+                "italic": False,
+                "spacing": 0,
+                "wordSpacing": 0,
+                "underline": False,
+                "overline": False,
+                "strikeOut": False,
+                "stretch": 0,
+                "stroke": 0,
+                "strokeColor": (0, 0, 0),
+                "capitalization": "mixedCase",  # AllUppercase AllLowercase, SmallCaps, Capitalize
+            },
+        }
+    ],
+    "center": [
+        {
+            "code": "copyright",
+            "enable": True,
+            "checked": False,
+            "font": {
+                "size": 25,
+                "family": "Noto Sans",  # Noto Sans
+                "fillColor": (255, 255, 255),
+                "bold": True,
+                "italic": False,
+                "spacing": 0,
+                "wordSpacing": 0,
+                "underline": False,
+                "overline": False,
+                "strikeOut": False,
+                "stretch": 0,
+                "stroke": 0,
+                "strokeColor": (0, 0, 0),
+                "capitalization": "mixedCase",  # AllUppercase AllLowercase, SmallCaps, Capitalize
+                "opacity": 1.0,
+            },
+        }
+    ],
+}
+
+
 COPYRIGHT_LABEL = "Support, Subin. Gopi (subing85@gmail.com)."  # "Copyright (c) 2026, Motion-Craft Technology All rights reserved."
 
 

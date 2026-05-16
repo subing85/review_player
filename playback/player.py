@@ -149,12 +149,9 @@ class MediaPlayer(QtCore.QObject):
         self.cache_changed.emit([])
         self.update_frame()
 
-
-
     def seek(self, frame):
         self.current_frame = frame
         self.update_frame()
-
 
     def backword_frame(self):
         if not self.reader:

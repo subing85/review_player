@@ -146,15 +146,19 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.loopButton.toggled.connect(self.player.set_loop)
 
-        self.player.frame_ready.connect(self.viewer.set_frame)
+        self.player.frame_ready.connect(self.viewer.set_current_frame)
         self.player.frame_changed.connect(self.timeline.set_frame)
         self.player.cache_changed.connect(self.timeline.set_cached_frames)
+
+        # self.player.frame_changed.connect(self.viewer.set_current_frame)
 
         # self.timeline.frame_changed.connect(self.player.seek)
         self.timeline.frame_changed.connect(self.seek)
 
         self.backwordButton.clicked.connect(self.backword_frame)
         self.forwardButton.clicked.connect(self.forward_frame)
+
+        self.displayMenuButton.menu.overlay_changed.connect(self.viewer.set_overlay_option)
 
         self.helpButton.clicked.connect(self.help)
 
@@ -182,6 +186,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowIcon(pixmap)
 
     def openMedia(self):
+        """
         dialog = OpenMediaDialog(self)
 
         if dialog.exec():
@@ -189,8 +194,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if not filepath:
             return
+        """
 
-        # filepath = "/alpha/works/C2C/samples/footage/shot-1001-1/shot-1001.####.png"
+        filepath = "/alpha/works/C2C/samples/footage/shot-1001-1/shot-1001.####.png"
 
         LOGGER.info(f"Source filepath, {filepath}")
 

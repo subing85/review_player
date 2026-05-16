@@ -134,7 +134,6 @@ class TimelineWidget(QtWidgets.QWidget):
 
         return ranges
 
-
     def build_ranges1(self, frames):
         if not frames:
             return []
@@ -171,7 +170,6 @@ class TimelineWidget(QtWidgets.QWidget):
             self.update_frame_from_mouse(event.pos().x())
 
     def update_frame_from_mouse(self, x):
-
         width = self.width()
 
         total_frames = self.end_frame - self.start_frame + 1

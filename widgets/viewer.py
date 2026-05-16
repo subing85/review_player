@@ -1,7 +1,11 @@
 import numpy
 
+import constants
+
 from OpenGL import GL
 
+from PySide6 import QtGui
+from PySide6 import QtCore
 from PySide6 import QtWidgets
 from PySide6 import QtOpenGLWidgets
 
@@ -19,35 +23,37 @@ class ViewerWidget(QtOpenGLWidgets.QOpenGLWidget):
 
         self.frame = None
 
+        self.overlay_options = {
+            "top_left": {},
+            "top_right": {},
+            "bottom_center": {},
+            "center": {},
+            "bottom_left": {},
+            "bottom_right": {},
+        }
+
+        self.overlay_pixmaps = {}
+
+
     def set_frame(self, frame):
-
         self.frame = frame
-
         self.update()
 
     def initializeGL(self):
-
         GL.glClearColor(0.1, 0.1, 0.1, 1.0)
 
     def resizeGL(self, width, height):
-
         GL.glViewport(0, 0, width, height)
 
     def paintGL(self):
-
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         if self.frame is None:
             return
 
         image = numpy.flipud(self.frame)
-
         image = numpy.ascontiguousarray(image)
-
         image_height, image_width, channels = image.shape
-
-        # viewport_width = self.width()
-        # viewport_height = self.height()
 
         dpr = self.devicePixelRatioF()
 
@@ -55,51 +61,22 @@ class ViewerWidget(QtOpenGLWidgets.QOpenGLWidget):
         viewport_height = int(self.height() * dpr)
 
         image_aspect = image_width / image_height
-
         viewport_aspect = viewport_width / viewport_height
 
-        # --------------------------------------------------
         # Fit Image
-        # --------------------------------------------------
-
         if image_aspect > viewport_aspect:
             draw_width = viewport_width
-            draw_height = int(draw_width / image_aspect)
+            draw_height = int(x / image_aspect)
 
         else:
             draw_height = viewport_height
             draw_width = int(draw_height * image_aspect)
 
-        # --------------------------------------------------
-        # Compute fit scale
-        # --------------------------------------------------
-
-        # scale_x = viewport_width / image_width
-        # scale_y = viewport_height / image_height
-
-        # scale = min(scale_x, scale_y)
-
-        # draw_width = int(image_width * scale)
-        # draw_height = int(image_height * scale)
-
-        # --------------------------------------------------
         # Center image
-        # --------------------------------------------------
-
         x = int((viewport_width - draw_width) / 2)
         y = int((viewport_height - draw_height) / 2)
 
-        # print("\n")
-        # print("Image", image_width, image_height)
-        # print("viewport", viewport_width, viewport_height)
-        # print("draw", draw_width, draw_height)
-        # print("final", x, y)
-        # print("\n")
-
-        # --------------------------------------------------
         # Configure 2D projection
-        # --------------------------------------------------
-
         GL.glMatrixMode(GL.GL_PROJECTION)
         GL.glLoadIdentity()
 
@@ -108,69 +85,280 @@ class ViewerWidget(QtOpenGLWidgets.QOpenGLWidget):
         GL.glMatrixMode(GL.GL_MODELVIEW)
         GL.glLoadIdentity()
 
-        # --------------------------------------------------
         # Draw image
-        # --------------------------------------------------
-
         GL.glRasterPos2i(x, y)
-
         GL.glPixelZoom(draw_width / image_width, draw_height / image_height)
-
         gl_format = GL.GL_RGBA if channels == 4 else GL.GL_RGB
-
         GL.glDrawPixels(image_width, image_height, gl_format, GL.GL_UNSIGNED_BYTE, image)
 
         # Reset zoom
         GL.glPixelZoom(1, 1)
 
+        # Store LOGICAL Display Rect For QPainter overlay drawing
+        logical_draw_width = int(draw_width / dpr)
+        logical_draw_height = int(draw_height / dpr)
 
-"""
+        logical_x = int(x / dpr)
+        logical_y = int(y / dpr)
 
-class ViewerWidget(QtOpenGLWidgets.QOpenGLWidget):
+        self.display_rect = QtCore.QRect(
+            logical_x, logical_y, logical_draw_width, logical_draw_height
+        )
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+        # Overlay
+        self.draw_overlay()
 
-        self.frame = None
 
-    def set_frame(self, frame):
+    def set_overlay_option(self, checked, key, position, context):
+        if position not in self.overlay_options:
+            self.overlay_options[position] = {}
 
-        self.frame = frame
+        if key not in self.overlay_options[position]:
+            self.overlay_options[position][key] = {}
+
+        self.overlay_options[position][key] = context
+        self.overlay_options[position][key]["checked"] = checked
 
         self.update()
 
-    def initializeGL(self):
+    def draw_overlay(self):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
 
-        glClearColor(0.1, 0.1, 0.1, 1.0)
+        rect = self.display_rect
+        margin = 20
 
-    def resizeGL(self, width, height):
+        for position in constants.WATER_MARKS_INPUTS:
+            self.draw_overlay_position(painter, rect, position, margin)
 
-        glViewport(0, 0, width, height)
+        painter.end()
 
-    def paintGL(self):
-
-        glClear(GL_COLOR_BUFFER_BIT)
-
-        if self.frame is None:
+    def draw_overlay_position(self, painter, rect, position, margin):
+        overlays = self.overlay_options.get(position, {})
+        if not overlays:
             return
 
-        image = numpy.flipud(self.frame)
+        metrics = QtGui.QFontMetrics(painter.font())
+        spacing = 25
 
-        image = numpy.ascontiguousarray(image)
+        # START POSITION
+        if position == "top_left":
+            x = rect.left() + margin
+            y = rect.top() + margin # 40
+            align = "left"
+        elif position == "top_center":
+            x = rect.center().x()
+            y = rect.top() + margin # 40
+            align = "center"
+        elif position == "top_right":
+            x = rect.right() - margin
+            y = rect.top() + margin # 40
+            align = "right"
+        elif position == "bottom_left":
+            x = rect.left() + margin
+            y = rect.bottom() - margin # 40
+            align = "left"
+        elif position == "bottom_center":
+            x = rect.center().x()
+            y = (rect.bottom() - metrics.descent() - 10)
+            align = "center"
+        elif position == "bottom_right":
+            x = rect.right() - margin
+            y = rect.bottom() - margin # 40
+            align = "right"
+        elif position == "center":
+            x = rect.center().x()
+            y = rect.center().y()
+            align = "center"
+        else:
+            return
 
-        height, width, channels = image.shape
+        reverse_vertical = position in ["bottom_left", "bottom_center", "bottom_right"]
 
-        glRasterPos2f(-1, -1)
+        # DRAW ITEMS
+        for key, context in overlays.items():
+            if not context.get("checked"):
+                continue
 
-        glDrawPixels(
-            width,
-            height,
-            GL_RGB,
-            GL_UNSIGNED_BYTE,
-            image
-        )
+            typed = context.get("type", "text")
 
-"""
+            # IMAGE
+            if typed == "image":
+                pixmap = self.get_overlay_pixmap(key)
+
+                if pixmap:
+                    scaled = pixmap.scaledToHeight(50, QtCore.Qt.SmoothTransformation)
+                    draw_x = x
+
+                    if align == "center":
+                        draw_x -= (scaled.width() / 2)
+                    elif align == "right":
+                        draw_x -= scaled.width()
+
+                    # TOP / BOTTOM DIRECTION
+                    if reverse_vertical:
+                        draw_y = (y - scaled.height())
+                    else:
+                        draw_y = y
+
+                    # Opacity
+                    opacity = context.get("opacity", 1.0)
+                    painter.setOpacity(opacity)
+
+                    # Draw
+                    path = painter.drawPixmap(int(draw_x), int(draw_y), scaled)
+
+                    # Reset Opacity
+                    painter.setOpacity(1.0)
+
+                    offset = (scaled.height() + 10)
+
+                    if reverse_vertical:
+                        y -= offset
+                    else:
+                        y += offset
+            # TEXT
+            else:
+                text = self.get_overlay_text(key)
+
+                # Accurate Text Width
+                font_data = context["font"]
+
+                font = QtGui.QFont()
+                font.setFamily(font_data.get("family", "Arial"))
+                font.setPointSize(font_data.get("size", 10))
+                font.setBold(font_data.get("bold", False))
+                font.setItalic(font_data.get("italic", False))
+                font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, font_data.get("spacing", 0))
+
+                path = QtGui.QPainterPath()
+                path.addText(0, 0, font, text)
+
+                bounds = path.boundingRect()
+                text_width = bounds.width()
+
+                # Alignment
+                draw_x = x
+
+                if align == "center":
+                    draw_x -= (text_width / 2)
+                elif align == "right":
+                    draw_x -= text_width
+
+                # Draw
+                self.draw_overlay_text(painter, draw_x, y, text, context["font"])
+
+                # Vertical Offset
+                offset = (spacing + context["font"].get("spacing", 0))
+
+                if reverse_vertical:
+                    y -= offset
+                else:
+                    y += offset
+
+                """
+                text = self.get_overlay_text(key)
+                text_width = metrics.horizontalAdvance(text)
+                draw_x = x
+
+                if align == "center":
+                    draw_x -= (text_width / 2)
+                elif align == "right":
+                    draw_x -= text_width
+
+                self.draw_overlay_text(painter, draw_x, y, text, context["font"])
+
+                if reverse_vertical:
+                    y -= spacing + context["font"]["spacing"]
+                else:
+                    y += spacing + context["font"]["spacing"]
+                """
+
+    def get_overlay_pixmap(self, key):
+        paths = {
+            "Project Logo": "/alpha/works/C2C/samples/projects/poster_01.png",
+            "Studio Logo": "/alpha/works/C2C/dev/batman/resources/src/resources/icons/C2C.png",
+        }
+
+        path = paths.get(key)
+
+        if not path:
+            return None
+
+        if not hasattr(self, "_overlay_pixmaps"):
+            self._overlay_pixmaps = {}
+
+        if key not in self._overlay_pixmaps:
+            self._overlay_pixmaps[key] = QtGui.QPixmap(path)
+
+        return self._overlay_pixmaps[key]
+
+    def draw_overlay_text(self, painter, x, y, text, font_data):
+        # Font
+        font = QtGui.QFont()
+
+        font.setFamily(font_data.get("family", "Arial"))
+        font.setPointSize(font_data.get("size", 10))
+        font.setBold(font_data.get("bold", False))
+        font.setItalic(font_data.get("italic", False))
+        font.setUnderline(font_data.get("underline", False))
+        font.setOverline(font_data.get("overline", False))
+        font.setStrikeOut(font_data.get("strikeOut", False))
+
+        # Word Spacing
+        font.setWordSpacing(font_data.get("wordSpacing", 0))
+
+        # Letter Spacing
+        font.setLetterSpacing(QtGui.QFont.AbsoluteSpacing, font_data.get("spacing", 0))
+
+        painter.setFont(font)
+
+        # Colors
+        fill_color = QtGui.QColor(*font_data.get("fillColor", (255, 255, 255)))
+        stroke_color = QtGui.QColor(*font_data.get("strokeColor", (0, 0, 0)))
+
+        stroke_width = font_data.get("stroke", 2)
+
+        # Text Path
+        path = QtGui.QPainterPath()
+        path.addText(x, y, font, text)
+
+        # Stroke
+        if stroke_width > 0:
+            pen = QtGui.QPen(stroke_color)
+            pen.setWidth(stroke_width)
+            painter.strokePath(path, pen)
+
+        opacity = font_data.get("opacity", 1.0)
+        painter.setOpacity(opacity)
+
+        # Fill
+        painter.fillPath(path, fill_color)
+
+        return path
+
+
+    def get_overlay_text(self, key):
+        values = {
+            "project": "Project: Demo",
+            "shot": "Shot: SH010",
+            "task": "Task: Lighting",
+            "version": "Version: v001",
+            "date": f"Date: {QtCore.QDate.currentDate().toString()}",
+            "artist": "Artist: Batman Hero",
+            "frame": f"Frame: 10001",
+            "copyright": "Support, Subin. Gopi (subing85@gmail.com).",
+        }
+
+        return values.get(key, key)
+
+
+    def set_current_frame(self, frame):
+        self.current_frame = frame + 1
+
+        self.update()
+
 
 if __name__ == "__main__":
     pass

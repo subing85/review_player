@@ -10,6 +10,7 @@ import constants
 from PySide6 import QtCore
 from PySide6 import QtWidgets
 
+from widgets.styles import Font
 
 class ContextCombobox(QtWidgets.QComboBox):
     def __init__(self, parent, **kwargs):
@@ -74,10 +75,10 @@ class FbsCombobox(ContextCombobox):
     def __init__(self, parent, **kwargs):
         kwargs["key"] = "code"
         kwargs["contextList"] = constants.FPS_VALUES
-
         super(FbsCombobox, self).__init__(parent, **kwargs)
 
         self.setToolTip("Frame Per Second")
+        self.setStyleSheet("QComboBox {background: transparent; border: none;}")
 
         self.setValue(constants.DEFULT_FPS)
 
@@ -92,6 +93,7 @@ class AovsCombobox(QtWidgets.QComboBox):
         super(AovsCombobox, self).__init__(parent)
 
         self.setToolTip("Source Media Aovs")
+        self.setStyleSheet("QComboBox {background: transparent; border: none;}")
 
         self.setMinimumSize(QtCore.QSize(150, 0))
 
@@ -104,6 +106,21 @@ class AovsCombobox(QtWidgets.QComboBox):
         self.clear()
         self.addItems(aovs)
         self.setEnabled(True if aovs else False)
+
+
+class ProjectCombobox(ContextCombobox):
+    def __init__(self, parent, **kwargs):
+        super(ProjectCombobox, self).__init__(parent, **kwargs)
+
+        # self.setDuplicatesEnabled(True)
+        # self.setFrame(False)
+
+        font = Font(15, bold=False)
+        self.setFont(font)
+
+        self.setStyleSheet("QComboBox {background: transparent; border: none;}")
+
+        self.addItems(["All Project", "TS-1", "TS-2"])
 
 
 if __name__ == "__main__":

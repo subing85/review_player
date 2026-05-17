@@ -11,6 +11,7 @@ from PySide6 import QtCore
 from PySide6 import QtWidgets
 
 from widgets.styles import Font
+from widgets.pixmaps import PathPixmap
 
 
 class CopyrightLabel(QtWidgets.QLabel):
@@ -27,6 +28,23 @@ class CopyrightLabel(QtWidgets.QLabel):
             QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed
         )
         self.setSizePolicy(sizepolicy)
+
+
+class ProjectIconLabel(QtWidgets.QLabel):
+    def __init__(self, parent, **kwargs):
+        super(ProjectIconLabel, self).__init__(parent)
+
+        # self.setStyleSheet("background-color: rgb(170, 170, 127);")
+
+        sizepolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred
+        )
+        self.setSizePolicy(sizepolicy)
+
+    def setThumbnail(self, filepath):
+        pixmap = PathPixmap(filepath)
+        self.setPixmap(pixmap)
+        self.setScaledContents(False)
 
 
 if __name__ == "__main__":

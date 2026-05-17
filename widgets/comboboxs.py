@@ -1,8 +1,16 @@
+# Copyright (c) 2026, Motion-Craft Technology All rights reserved.
+# Author: Subin. Gopi (subing85@gmail.com).
+# Description: Review Player Qt QComboBox wapper module.
+# WARNING! All changes made in this file will be lost when recompiling source file!
+
+from __future__ import absolute_import
+
 import constants
 
 from PySide6 import QtCore
 from PySide6 import QtWidgets
 
+from widgets.styles import Font
 
 class ContextCombobox(QtWidgets.QComboBox):
     def __init__(self, parent, **kwargs):
@@ -65,13 +73,12 @@ class FbsCombobox(ContextCombobox):
     fps_changed = QtCore.Signal(dict)
 
     def __init__(self, parent, **kwargs):
-
         kwargs["key"] = "code"
         kwargs["contextList"] = constants.FPS_VALUES
-
         super(FbsCombobox, self).__init__(parent, **kwargs)
 
         self.setToolTip("Frame Per Second")
+        self.setStyleSheet("QComboBox {background: transparent; border: none;}")
 
         self.setValue(constants.DEFULT_FPS)
 
@@ -86,10 +93,12 @@ class AovsCombobox(QtWidgets.QComboBox):
         super(AovsCombobox, self).__init__(parent)
 
         self.setToolTip("Source Media Aovs")
+        self.setStyleSheet("QComboBox {background: transparent; border: none;}")
 
         self.setMinimumSize(QtCore.QSize(150, 0))
-        # sizepolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-        # self.setSizePolicy(sizepolicy)
+
+        sizepolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        self.setSizePolicy(sizepolicy)
 
     def setAovs(self, aovs):
         aovs = aovs or list()
@@ -97,6 +106,21 @@ class AovsCombobox(QtWidgets.QComboBox):
         self.clear()
         self.addItems(aovs)
         self.setEnabled(True if aovs else False)
+
+
+class ProjectCombobox(ContextCombobox):
+    def __init__(self, parent, **kwargs):
+        super(ProjectCombobox, self).__init__(parent, **kwargs)
+
+        # self.setDuplicatesEnabled(True)
+        # self.setFrame(False)
+
+        font = Font(15, bold=False)
+        self.setFont(font)
+
+        self.setStyleSheet("QComboBox {background: transparent; border: none;}")
+
+        self.addItems(["All Project", "TS-1", "TS-2"])
 
 
 if __name__ == "__main__":

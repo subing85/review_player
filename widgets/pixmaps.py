@@ -1,3 +1,10 @@
+# Copyright (c) 2026, Motion-Craft Technology All rights reserved.
+# Author: Subin. Gopi (subing85@gmail.com).
+# Description: Review Player Qt QPixmap and QIcon wapper module.
+# WARNING! All changes made in this file will be lost when recompiling source file!
+
+from __future__ import absolute_import
+
 import utils
 import resources
 
@@ -22,6 +29,13 @@ class NamePixmapIcon(QtGui.QIcon):
 
         pixmap = NamePixmap(name)
         self.addPixmap(pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
+
+
+class PathPixmap(QtGui.QPixmap):
+    def __init__(self, filepath, **kwargs):
+        super(PathPixmap, self).__init__()
+
+        self.load(filepath)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,11 @@
+# Copyright (c) 2026, Motion-Craft Technology All rights reserved.
+# Author: Subin. Gopi (subing85@gmail.com).
+# Description: Review Player Qt QMenu and QAction wapper module.
+# WARNING! All changes made in this file will be lost when recompiling source file!
 
-from functools import partial
+from __future__ import absolute_import
+
+import constants
 
 from PySide6 import QtGui
 from PySide6 import QtCore
@@ -8,47 +14,58 @@ from PySide6 import QtWidgets
 from widgets.pixmaps import NamePixmapIcon
 
 
-
 class DisplayMenus(QtWidgets.QMenu):
 
-    values = QtCore.Signal(int)
+    overlay_changed = QtCore.Signal(bool, str, str, dict)
 
     def __init__(self, parent, **kwargs):
-        super(DisplayMenus, self).__init__(parent)
+        super().__init__(parent)
 
         self.setTitle("Display")
-
-        self.items = [
-            {"code": "frame", "enable": True, "checked": True},
-            {"code": "project", "enable": True, "checked": True},
-            {"code": "shot", "enable": True, "checked": True},
-            {"code": "task", "enable": True, "checked": True},
-            {"code": "version", "enable": True, "checked": True},
-            {"code": "date", "enable": True, "checked": True},
-            {"code": "aritist", "enable": True, "checked": True},
-        ]
-
-        for context in self.items:
-            action = QtGui.QAction(self)
-            action.setCheckable(True)
-            action.setChecked(context["checked"])
-            action.setText(context["code"])
-            action.setEnabled(context["enable"])
-            context["action"] = action
-
-            self.addAction(action) # self.addSeparator()
-            action.triggered.connect(self.get_display)
-
         self.setTearOffEnabled(True)
 
-    def get_display(self):
-        result = list()
-        for context in self.items:
-            if not context["action"].isChecked():
-                continue
-            result.append(context)
+        self.displays = constants.WATER_MARKS_INPUTS
 
-        self.values.emit(result)
+        abcd = list()
+
+        for position, values in self.displays.items():
+            for context in values:
+                if not context.get("enable"):
+                    continue
+
+                action = DisplayAction(
+                    self, context["code"], context["checked"], enable=context["enable"]
+                )
+                self.addAction(action)
+
+                parameter = {"type": context.get("type", "text")}
+
+                if parameter["type"] == "text":
+                    parameter["font"] = context.get("font")
+
+                if "opacity" in context and parameter["type"] == "image":
+                    parameter["opacity"] = context["opacity"]
+
+                action.toggled.connect(
+                    lambda checked, key=context[
+                        "code"
+                    ], pos=position, param=parameter: self.overlay_changed.emit(
+                        checked, key, pos, param
+                    )
+                )
+
+
+class DisplayAction(QtGui.QAction):
+
+    def __init__(self, parent, text, checked, **kwargs):
+        super(DisplayAction, self).__init__(parent)
+
+        enable = True if kwargs.get("enable") is None else kwargs["enable"]
+
+        self.setCheckable(True)
+        self.setChecked(checked)
+        self.setText(text)
+        self.setEnabled(enable)
 
 
 if __name__ == "__main__":

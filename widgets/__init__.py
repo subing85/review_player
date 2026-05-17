@@ -17,6 +17,8 @@ from PySide6 import QtWidgets
 
 from ocio import OCIOProcessor
 
+from playlist import Projects
+
 from widgets.buttons import HelpButton
 from widgets.buttons import OpenButton
 from widgets.buttons import LoopButton
@@ -44,6 +46,8 @@ from widgets.viewer import ViewerWidget
 from widgets.timeline import TimelineWidget
 
 from playback.player import MediaPlayer
+
+
 
 LOGGER = logger.getLogger(__name__)
 
@@ -185,11 +189,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
         SetStylesheet(self, theme=constants.DEFAULT_THEME)
 
+        self.splitter.setSizes([300, 1065])
+
     def setupIcons(self):
         pixmap = NamePixmapIcon(constants.RP_TOOL_ICON)
         self.setWindowIcon(pixmap)
 
     def openMedia(self):
+        print(self.splitter.sizes())
+
         dialog = OpenMediaDialog(self, browsepath=self.browsepath)
         filepath = None
         if dialog.exec():

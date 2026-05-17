@@ -31,5 +31,12 @@ class NamePixmapIcon(QtGui.QIcon):
         self.addPixmap(pixmap, QtGui.QIcon.Normal, QtGui.QIcon.Off)
 
 
+class PathPixmap(QtGui.QPixmap):
+    def __init__(self, filepath, **kwargs):
+        super(PathPixmap, self).__init__()
+
+        self.load(filepath)
+
+
 if __name__ == "__main__":
     pass

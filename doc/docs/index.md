@@ -39,3 +39,8 @@ The project is built primarily using
 This is still an early beta release focused mainly on core architecture, playback workflow, and UI foundations. There is still a lot to improve, but the project has reached a stage where I’m comfortable sharing progress publicly.
 </p>
 
+---
+
+**© Support, subing85@gmail.com.**
+
+---

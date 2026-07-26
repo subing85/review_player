@@ -552,6 +552,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Open support or documentation URL.
         """
 
+
         LOGGER.info(f"Support, {constants.WEB_DOC_LINK}")
 
         # Open help URL in browser
